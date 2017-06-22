@@ -1,4 +1,4 @@
-package io.github.pkhanal;
+package io.github.pkhanal.sources;
 
 import org.apache.flink.api.common.functions.StoppableFunction;
 import org.apache.flink.hadoop.shaded.com.google.common.base.Charsets;
@@ -10,9 +10,9 @@ import java.util.Properties;
 public class MQTTSource implements SourceFunction<String >, StoppableFunction {
 
     // ----- Required property keys
-    public static final String URL = "mqtt.broker.url";
+    public static final String URL = "mqtt.server.url";
     public static final String CLIENT_ID = "mqtt.client.id";
-    public static final String TOPIC = "mqtt.client.topic";
+    public static final String TOPIC = "mqtt.topic";
 
     // ------ Optional property keys
     public static final String USERNAME = "mqtt.username";
