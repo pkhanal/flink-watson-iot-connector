@@ -1,10 +1,10 @@
 package io.github.pkhanal.sources;
 
 import org.apache.flink.api.common.functions.StoppableFunction;
-import org.apache.flink.hadoop.shaded.com.google.common.base.Charsets;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.eclipse.paho.client.mqttv3.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class MQTTSource implements SourceFunction<String >, StoppableFunction {
@@ -24,7 +24,7 @@ public class MQTTSource implements SourceFunction<String >, StoppableFunction {
     // ------ Runtime fields
     private transient MqttClient client;
     private transient volatile boolean running;
-    private transient Object waitLock = new Object();
+    private transient Object waitLock;
 
     public MQTTSource(Properties properties) {
         checkProperty(properties, URL);
@@ -46,7 +46,7 @@ public class MQTTSource implements SourceFunction<String >, StoppableFunction {
     }
 
     @Override
-    public void run(SourceContext<String> ctx) throws Exception {
+    public void run(final SourceContext<String> ctx) throws Exception {
         MqttConnectOptions connectOptions = new MqttConnectOptions();
         connectOptions.setCleanSession(true);
 
@@ -63,16 +63,19 @@ public class MQTTSource implements SourceFunction<String >, StoppableFunction {
         client = new MqttClient(properties.getProperty(URL), properties.getProperty(CLIENT_ID));
         client.connect(connectOptions);
 
-        client.subscribe(properties.getProperty(TOPIC), 0, (topic, message) -> {
-            synchronized (ctx.getCheckpointLock()) {
-                ctx.collect(new String(message.getPayload(), Charsets.UTF_8));
-            }
+        client.subscribe(properties.getProperty(MQTTSource.TOPIC), (topic, message) -> {
+            String msg = new String(message.getPayload(), StandardCharsets.UTF_8);
+            ctx.collect(msg);
         });
+
+        running = true;
+        waitLock = new Object();
 
         while (running) {
             synchronized (waitLock) {
                 waitLock.wait(100L);
             }
+
         }
     }
 
@@ -82,14 +85,16 @@ public class MQTTSource implements SourceFunction<String >, StoppableFunction {
     }
 
     private void close() {
-        this.running = false;
-        if (client != null) {
-            try {
+        try {
+            if (client != null) {
                 client.disconnect();
-            } catch (MqttException exception) {
-
             }
+        } catch (MqttException exception) {
+
+        } finally {
+            this.running = false;
         }
+
         // leave main method
         synchronized (waitLock) {
             waitLock.notify();
