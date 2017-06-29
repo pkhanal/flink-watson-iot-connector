@@ -105,6 +105,32 @@ under the License.
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<id>Conversation</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>io.pkhanal.github.Conversation</mainClass>
+						</configuration>
+					</execution>
+					<execution>
+						<id>ReactiveTranslationTextToSpeech</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>io.pkhanal.github.ReactiveTranslatorAndTextToSpeech</mainClass>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

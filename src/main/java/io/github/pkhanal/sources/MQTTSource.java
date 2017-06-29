@@ -7,7 +7,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-public class MQTTSource implements SourceFunction<String >, StoppableFunction {
+public class MQTTSource implements SourceFunction<String>, StoppableFunction {
 
     // ----- Required property keys
     public static final String URL = "mqtt.server.url";

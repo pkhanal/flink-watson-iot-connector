@@ -8,8 +8,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Properties;
+import java.util.Random;
 
+// Publishes randomly generated temperature date every 500 milliseconds
 public class DeviceSimulator {
 
     private static final String USERNAME = "use-token-auth";
@@ -39,12 +42,21 @@ public class DeviceSimulator {
         MqttClient client = new MqttClient(serverUrl, clientId);
         client.connect(connectOptions);
 
-        int i = 20;
+        // Generate random temperature values between 40 - 60
+        Random rand = new Random();
+
         while (true) {
+            int temprature = rand.nextInt((60 - 40) + 1) + 40;
             JsonObject event = new JsonObject();
-            event.addProperty("temperature", i++);
+            event.addProperty("temperature", temprature);
+            event.addProperty("timestamp", Instant.now().toEpochMilli());
             System.out.println("Published Message: " + event.toString());
             client.publish(topic, new MqttMessage(event.toString().getBytes(StandardCharsets.UTF_8)));
+            try {
+                Thread.sleep(500);
+            } catch (Exception ex) {
+
+            }
         }
     }
 }
